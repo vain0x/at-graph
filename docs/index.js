@@ -37,6 +37,8 @@ const parse = src => {
   }
 }
 
+let svgGroup = undefined
+
 const renderGraph = ({ vertices, edges }) => {
   const g = new dagreD3.graphlib.Graph()
     .setGraph({})
@@ -53,7 +55,11 @@ const renderGraph = ({ vertices, edges }) => {
   const render = new dagreD3.render()
 
   const svg = d3.select("#preview-figure")
-  const svgGroup = svg.append("g")
+
+  if (!svgGroup) {
+    svgGroup = svg.append("g")
+  }
+
   render(d3.select("svg g"), g)
 
   var offsetX = (svg.attr("width") - g.graph().width) / 2;
