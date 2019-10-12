@@ -98,7 +98,7 @@ const main = () => {
     update(src)
   })
 
-  editInputElement.textContent = INITIAL_SRC
+  editInputElement.value = INITIAL_SRC
   update(INITIAL_SRC)
 }
 
