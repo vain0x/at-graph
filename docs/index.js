@@ -65,9 +65,9 @@ const renderGraph = ({ vertices, edges }) => {
   const width = Math.max(100, window.innerWidth - 100)
   svg.attr("width", width)
 
-  var offsetX = (width - g.graph().width) / 2;
-  svgGroup.attr("transform", "translate(" + offsetX + ", 20)");
-  svg.attr("height", g.graph().height + 40);
+  const offsetX = (width - g.graph().width) / 2
+  svgGroup.attr("transform", `translate(${offsetX}, 20)`)
+  svg.attr("height", g.graph().height + 40)
 }
 
 const update = src => {
