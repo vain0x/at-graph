@@ -62,7 +62,10 @@ const renderGraph = ({ vertices, edges }) => {
 
   render(d3.select("svg g"), g)
 
-  var offsetX = (svg.attr("width") - g.graph().width) / 2;
+  const width = Math.max(100, window.innerWidth - 100)
+  svg.attr("width", width)
+
+  var offsetX = (width - g.graph().width) / 2;
   svgGroup.attr("transform", "translate(" + offsetX + ", 20)");
   svg.attr("height", g.graph().height + 40);
 }
@@ -74,6 +77,21 @@ const update = src => {
 
 const main = () => {
   const editInputElement = document.getElementById("edit-input")
+
+  const currentSrc = () => editInputElement.value
+
+  let tick = 0
+  window.addEventListener("resize", () => {
+    const theTick = ++tick
+
+    setTimeout(() => {
+      if (tick === theTick) { // debounce
+        window.requestAnimationFrame(() => {
+          update(currentSrc())
+        })
+      }
+    }, 160)
+  })
 
   editInputElement.addEventListener("input", ev => {
     const src = ev.target.value
