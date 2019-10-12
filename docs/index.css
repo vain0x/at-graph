@@ -1,0 +1,80 @@
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.6rem;
+    font-family: "Yu Gothic Medium", "Hiragino Kaku Gothic Pro", sans-serif;
+    color: #212121;
+    background: #fefefe;
+}
+
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+    line-height: 1.5;
+}
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ol,
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+    display: flex;
+    flex-flow: column nowrap;
+    height: 100vh;
+}
+
+html,
+body,
+#app,
+#edit-section,
+#preview-section {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+body,
+#app,
+#edit-section,
+#preview-section,
+#preview-figure {
+    flex: 1;
+}
+
+#app {
+    padding: 16px;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* Graph style. */
+
+.node circle {
+    stroke: #999;
+    fill: #fff;
+    stroke-width: 1.6px;
+}
+
+.edgePath path {
+    stroke: #333;
+    stroke-width: 1.6px;
+}

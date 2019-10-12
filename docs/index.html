@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>AtGraph</title>
+  <link rel="stylesheet" href="index.css">
+  <script crossorigin src="https://d3js.org/d3.v5.min.js"></script>
+  <script crossorigin src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.min.js"></script>
+  <script src="index.js"></script>
+</head>
+
+<body>
+  <article id="app">
+    <form id="edit-section">
+      <textarea id="edit-input" rows=8></textarea>
+    </form>
+
+    <section id="preview-section">
+      <svg id="preview-figure" width=480></svg>
+    </section>
+  </article>
+
+  <footer>
+    Powered by: <a href="https://github.com/dagrejs/dagre-d3">dagre-d3</a>.
+  </footer>
+</body>
+
+</html>
