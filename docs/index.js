@@ -5,18 +5,53 @@ const INITIAL_SRC = `N M
 2 3
 3 1
 `
+const CHAR_LF = 0x0a
+const UPDATE_FRAME = 16
 
 const base64Encode = data => window.btoa(data)
 
 const base64Decode = encodedString => window.atob(encodedString)
 
-// Source -> Edges
-const parse = src => (
+const keyCodeIsArrow = k => 37 <= k && k <= 40
+
+const textIndexToPosition = (text, index) => {
+  index = Math.max(0, Math.min(text.length, index))
+
+  let row = 0
+  let col = 0
+  for (let i = 0; i < index; i++) {
+    if (text.charCodeAt(i) === CHAR_LF) {
+      row++
+      col = 0
+    } else {
+      col++
+    }
+  }
+
+  return [row, col]
+}
+
+// The end line is inclusive.
+const textSelectionToLineRange = (text, [start, end]) => {
+  const [startLine] = textIndexToPosition(text, start)
+  const [endLine] = textIndexToPosition(text, Math.max(start, end - 1))
+  return [startLine, endLine]
+}
+
+// Source -> EdgesWithLineIndexes
+const parseWithLineIndexes = src => (
   src.split(/\r\n|\n/)
-    .map(line => line.trim().split(/[\t 　]+/))
-    .filter(items => items.length >= 2)
+    .map((line, lineIndex) => [lineIndex, line.trim().split(/[\t 　]+/)])
+    .filter(([, items]) => items.length >= 2)
     .slice(1)
 )
+
+// EdgesWithLineIndexes -> Edges
+const stripLineIndexes = edges =>
+  edges.map(([, items]) => items)
+
+// Source -> Edges
+const parse = src => stripLineIndexes(parseWithLineIndexes(src))
 
 // Edges -> Source
 const format = edges =>
@@ -69,17 +104,18 @@ const toVertices = edges => {
 
 let svgGroup = undefined
 
-const renderGraph = edges => {
+const renderGraph = ({ vertices, edges }) => {
   const g = new dagreD3.graphlib.Graph()
     .setGraph({})
     .setDefaultEdgeLabel(() => ({}))
 
-  for (const v of toVertices(edges)) {
+  for (const v of vertices) {
     g.setNode(v, { label: v, shape: "circle" })
   }
 
-  for (const [u, v, w] of edges) {
-    g.setEdge(u, v, { label: w })
+  for (const { u, v, w, active } of edges) {
+    const klass = active ? "active" : "inactive"
+    g.setEdge(u, v, { label: w, class: klass })
   }
 
   const render = new dagreD3.render()
@@ -107,9 +143,27 @@ const updateHash = edges => {
   window.history.replaceState(HISTORY_STATE, TITLE, hash)
 }
 
-const update = src => {
-  const edges = parse(src)
-  renderGraph(edges)
+const update = (src, selection) => {
+  // Parse text.
+  const edgesWithLineIndexes = parseWithLineIndexes(src, selection)
+  const edges = stripLineIndexes(edgesWithLineIndexes)
+
+  // Highlight edges.
+  const [lineStart, lineEnd] = textSelectionToLineRange(src, selection)
+  const isActiveEdge = i => {
+    const [lineIndex] = edgesWithLineIndexes[i]
+    return lineStart <= lineIndex && lineIndex <= lineEnd
+  }
+
+  // Create graph.
+  const rendarableVertices = toVertices(edges)
+  const renderableEdges = edges.map(([u, v, w], ei) => ({
+    u, v, w, active: isActiveEdge(ei),
+  }))
+
+  // console.log({ src, selection, lineStart, lineEnd, edgesWithLineIndexes })
+
+  renderGraph({ vertices: rendarableVertices, edges: renderableEdges })
   updateHash(edges)
 }
 
@@ -117,6 +171,11 @@ const main = () => {
   const editInputElement = document.getElementById("edit-input")
 
   const currentSrc = () => editInputElement.value
+
+  const currentSelection = () => [
+    editInputElement.selectionStart,
+    editInputElement.selectionEnd,
+  ]
 
   const initialSrc = () => {
     const hash = document.location.hash.replace(/^#/, "")
@@ -130,26 +189,47 @@ const main = () => {
 
   const initialize = () => {
     const src = initialSrc()
+    const currentSelection = [0, 0]
+
     editInputElement.value = src
-    update(src)
+    update(src, currentSelection)
+  }
+
+  const updateWithCurrent = () => {
+    update(currentSrc(), currentSelection())
   }
 
   let tick = 0
-  window.addEventListener("resize", () => {
+  const delayUpdate = () => {
     const theTick = ++tick
 
     setTimeout(() => {
       if (tick === theTick) { // debounce
         window.requestAnimationFrame(() => {
-          update(currentSrc())
+          updateWithCurrent()
         })
       }
-    }, 160)
+    }, UPDATE_FRAME)
+  }
+
+  window.addEventListener("resize", () => {
+    delayUpdate()
   })
 
   editInputElement.addEventListener("input", ev => {
     const src = ev.target.value
-    update(src)
+    const selection = currentSelection()
+    update(src, selection)
+  })
+
+  editInputElement.addEventListener("keydown", ev => {
+    if (keyCodeIsArrow(ev.keyCode)) {
+      delayUpdate()
+    }
+  })
+
+  editInputElement.addEventListener("click", () => {
+    delayUpdate()
   })
 
   initialize()

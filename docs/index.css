@@ -78,3 +78,7 @@ footer {
     stroke: #333;
     stroke-width: 1.6px;
 }
+
+.edgePath.active path {
+    stroke: #0c0cf2;
+}
